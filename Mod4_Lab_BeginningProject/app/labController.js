@@ -3,12 +3,40 @@ app.controller('labController', [
     function ($scope, $timeout, $q, $http, gitHub) {
         $scope.model = {
             number: 0,
-            result: 'Ready',
+            result: 'Ready'
         };
-        
+
         $scope.checkOddNumber = checkOddNumber;
         $scope.getRepos = getRepos;
         $scope.loadDetail = loadDetail;
+
+        function getRepos(org) {
+            $scope.model.repos = gitHub.getAll(org);
+        }
+
+        function getReposOLD() {
+            $http.get('https://api.github.com/orgs/angular/repos')
+                .then(function (response) {
+                    $scope.model.repos = response.data;
+                }, function (response) {
+                    $scope.model.repos = 'Error: ' + response.data.message;
+                });
+        }
+
+        function loadDetail(name) {
+            $scope.model.detail = null;
+            $scope.model.detail = gitHub.getDetail({ id: name });
+        }
+
+        function loadDetailOLD(name) {
+            var url = 'https://api.github.com/repos/angular/' + name;
+            $http.get(url)
+                .then(function (response) {
+                    $scope.model.detail = response.data;
+                }, function (response) {
+                    $scope.model.detail = { error: true, message: 'Error: ' + response.data.message };
+                });
+        }
 
         function checkOddNumber(input) {
             $scope.model.result = 'Working...';
@@ -32,38 +60,9 @@ app.controller('labController', [
 
             return defer.promise;
         }
-       
+
         function isNumberOdd(input) {
             return !isNaN(input) && input % 2 == 1;
         }
-
-        function getReposOld() {
-            $http.get('https://api.github.com/orgs/angular/repos')
-            .then(function (response) {
-                    $scope.model.repos = response.data;
-                }, function (response) {
-                    $scope.model.repos = 'Error: ' + response.data.message;
-                });
-        }
-
-        function getRepos() {
-            $scope.model.repos = gitHub.getAll();
-        }
-
-        function loadDetailOld(name) {
-            var url = 'https://api.github.com/repos/angular/' + name;
-            $http.get(url)
-                .then(function (response) {
-                    $scope.model.detail = response.data;
-                }, function (response) {
-                    $scope.model.detail = { error: true, message: 'Error: ' + response.data.message };
-                });
-        }
-        
-        function loadDetail(name) {
-            $scope.model.detail = null;
-            $scope.model.detail = gitHub.getDetail({ id: name });
-        }
-
     }
 ]);
